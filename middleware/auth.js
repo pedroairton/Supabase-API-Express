@@ -13,6 +13,6 @@ module.exports = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    res.status(403).json({ message: "Acesso negado, token inválido", tokenDado: token });
+    res.status(403).json({ message: "Acesso negado, token inválido" });
   }
 };
