@@ -80,6 +80,7 @@ app.post("/admin/cadastro", authMiddleware, async (req, res) => {
       .json({ message: "Usuário cadastrado com sucesso.", data });
   }
 });
+//endpoint rota cadastro mensagem se estiver autenticado
 app.post("/admin/mensagem", authMiddleware, async (req, res) => {
   const { mensagem } = req.body;
 
@@ -93,6 +94,21 @@ app.post("/admin/mensagem", authMiddleware, async (req, res) => {
     return res
       .status(201)
       .json({ message: "Mensagem cadastrada com sucesso.", data });
+  }
+});
+app.post("/admin/encomenda", authMiddleware, async (req, res) => {
+  const { apt_vinculado, bloco_apartamento, transportadora, descricao, status } = req.body;
+
+  const { data, error } = await supabase
+    .from("encomendas")
+    .insert([{ apt_vinculado, bloco_apartamento, transportadora, descricao, status }]);
+
+  if (error) {
+    return res.status(500).json({ message: "Erro cadastrando encomenda!", data });
+  } else {
+    return res
+      .status(201)
+      .json({ message: "Encomenda cadastrada com sucesso.", data });
   }
 });
 
@@ -109,11 +125,24 @@ app.get("/moradores", async (req, res) => {
     return data;
   }
 });
-// receber todas os mensagens (não precisa estar autenticado.)
+// receber todas as mensagens (não precisa estar autenticado.)
 app.get("/mensagens", async (req, res) => {
   const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
 
   const { data, error } = await supabase.from("mensagens").select("*").order('created_at', {ascending: false}).limit(limit);
+
+  if (error) {
+    console.error("Erro ao conectar:", error);
+  } else {
+    res.status(200).json(data);
+    return data;
+  }
+});
+// receber todas os encomendas (precisa estar autenticado.)
+app.get("/admin/encomendas", authMiddleware ,async (req, res) => {
+  const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
+
+  const { data, error } = await supabase.from("encomendas").select("*").order('created_at', {ascending: false}).limit(limit);
 
   if (error) {
     console.error("Erro ao conectar:", error);
