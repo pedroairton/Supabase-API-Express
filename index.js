@@ -12,15 +12,15 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const authMiddleware = require("./middleware/auth");
 
 const express = require("express");
-const cors = require('cors')
-const corsOptions = {
-  origin: 'https://condominio360-react.vercel.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-};
-app.use(cors(corsOptions))
 
 const app = express();
+const cors = require("cors");
+const corsOptions = {
+  origin: "https://condominio360-react.vercel.app",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -94,7 +94,9 @@ app.post("/admin/mensagem", authMiddleware, async (req, res) => {
     .insert([{ mensagem }]);
 
   if (error) {
-    return res.status(500).json({ message: "Erro cadastrando mensagem!", data });
+    return res
+      .status(500)
+      .json({ message: "Erro cadastrando mensagem!", data });
   } else {
     return res
       .status(201)
@@ -102,14 +104,24 @@ app.post("/admin/mensagem", authMiddleware, async (req, res) => {
   }
 });
 app.post("/admin/encomenda", authMiddleware, async (req, res) => {
-  const { apt_vinculado, bloco_apartamento, transportadora, descricao, status } = req.body;
+  const {
+    apt_vinculado,
+    bloco_apartamento,
+    transportadora,
+    descricao,
+    status,
+  } = req.body;
 
   const { data, error } = await supabase
     .from("encomendas")
-    .insert([{ apt_vinculado, bloco_apartamento, transportadora, descricao, status }]);
+    .insert([
+      { apt_vinculado, bloco_apartamento, transportadora, descricao, status },
+    ]);
 
   if (error) {
-    return res.status(500).json({ message: "Erro cadastrando encomenda!", data });
+    return res
+      .status(500)
+      .json({ message: "Erro cadastrando encomenda!", data });
   } else {
     return res
       .status(201)
@@ -119,13 +131,17 @@ app.post("/admin/encomenda", authMiddleware, async (req, res) => {
 
 // receber todos os moradores (não precisa estar autenticado.)
 app.get("/", async (req, res) => {
-  res.status(200).json({ message: 'Hello World' });
+  res.status(200).json({ message: "Hello World" });
 });
 // receber todos os moradores (não precisa estar autenticado.)
 app.get("/moradores", async (req, res) => {
   const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
 
-  const { data, error } = await supabase.from("apartamentos").select("*").order('created_at', {ascending: false}).limit(limit);
+  const { data, error } = await supabase
+    .from("apartamentos")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   if (error) {
     console.error("Erro ao conectar:", error);
@@ -138,7 +154,11 @@ app.get("/moradores", async (req, res) => {
 app.get("/mensagens", async (req, res) => {
   const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
 
-  const { data, error } = await supabase.from("mensagens").select("*").order('created_at', {ascending: false}).limit(limit);
+  const { data, error } = await supabase
+    .from("mensagens")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   if (error) {
     console.error("Erro ao conectar:", error);
@@ -148,10 +168,14 @@ app.get("/mensagens", async (req, res) => {
   }
 });
 // receber todas os encomendas (precisa estar autenticado.)
-app.get("/admin/encomendas", authMiddleware ,async (req, res) => {
+app.get("/admin/encomendas", authMiddleware, async (req, res) => {
   const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
 
-  const { data, error } = await supabase.from("encomendas").select("*").order('created_at', {ascending: false}).limit(limit);
+  const { data, error } = await supabase
+    .from("encomendas")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   if (error) {
     console.error("Erro ao conectar:", error);
