@@ -13,9 +13,14 @@ const authMiddleware = require("./middleware/auth");
 
 const express = require("express");
 const cors = require('cors')
+const corsOptions = {
+  origin: 'https://condominio360-react.vercel.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+app.use(cors(corsOptions))
 
 const app = express();
-app.use(cors())
 app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET;
