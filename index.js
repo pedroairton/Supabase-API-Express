@@ -114,7 +114,7 @@ app.post("/admin/encomenda", authMiddleware, async (req, res) => {
 
 // receber todos os moradores (não precisa estar autenticado.)
 app.get("/", async (req, res) => {
-  res.send('hello world...')
+  res.status(200).json({ message: 'Hello World' });
 });
 // receber todos os moradores (não precisa estar autenticado.)
 app.get("/moradores", async (req, res) => {
