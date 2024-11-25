@@ -113,6 +113,10 @@ app.post("/admin/encomenda", authMiddleware, async (req, res) => {
 });
 
 // receber todos os moradores (não precisa estar autenticado.)
+app.get("/", async (req, res) => {
+  res.send('hello world...')
+});
+// receber todos os moradores (não precisa estar autenticado.)
 app.get("/moradores", async (req, res) => {
   const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
 
