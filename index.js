@@ -161,3 +161,5 @@ const port = 8080;
 app.listen(port, () => {
   console.log("Rodando com Express na Porta: " + port);
 });
+
+module.exports = app;
