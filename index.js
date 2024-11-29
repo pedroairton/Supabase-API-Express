@@ -128,6 +128,60 @@ app.post("/admin/encomenda", authMiddleware, async (req, res) => {
       .json({ message: "Encomenda cadastrada com sucesso.", data });
   }
 });
+//endpoint rota cadastro reserva (sem autenticação)
+app.post("/admin/reserva", async (req, res) => {
+  const { local_reservado, horario_inicial, horario_final } = req.body;
+
+  // Verificação de conflito de horários
+  const { data: reservasExistentes, error: errorConsulta } = await supabase
+    .from("reservas")
+    .select("*")
+    .eq("local_reservado", local_reservado)
+    .or(`horario_inicial.lte.${horario_final},horario_final.gte.${horario_inicial}`);
+
+  if (errorConsulta) {
+    return res.status(500).json({ message: "Erro ao verificar conflitos!", error: errorConsulta });
+  }
+
+  // Filtrar reservas conflitantes que realmente se sobrepõem
+  const conflito = reservasExistentes.some((reserva) => {
+    return (
+      (new Date(reserva.horario_inicial) < new Date(horario_final)) &&
+      (new Date(reserva.horario_final) > new Date(horario_inicial))
+    );
+  });
+
+  if (conflito) {
+    return res.status(400).json({ message: "Conflito de horários! Já existe uma reserva neste período." });
+  }
+
+  // Inserção da nova reserva se não houver conflitos
+  const { data, error } = await supabase
+    .from("reservas")
+    .insert([{ local_reservado, horario_inicial, horario_final }]);
+
+  if (error) {
+    return res.status(500).json({ message: "Erro cadastrando reserva!", error });
+  } else {
+    return res.status(201).json({ message: "Reserva cadastrada com sucesso.", data });
+  }
+});
+// receber reservas por filtro de data
+app.get("/reservas/:data", async (req, res) => {
+  const dataSelecionada = req.params.data; // Formato esperado: 'YYYY-MM-DD'
+
+  const { data, error } = await supabase
+    .from("reservas")
+    .select("*")
+    .gte("horario_inicial", `${dataSelecionada}T00:00:00`)
+    .lt("horario_inicial", `${dataSelecionada}T23:59:59`);
+
+  if (error) {
+    return res.status(500).json({ message: "Erro ao buscar reservas!", error });
+  } else {
+    return res.status(200).json(data);
+  }
+});
 
 // receber todos os moradores (não precisa estar autenticado.)
 app.get("/", async (req, res) => {
@@ -156,6 +210,23 @@ app.get("/mensagens", async (req, res) => {
 
   const { data, error } = await supabase
     .from("mensagens")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("Erro ao conectar:", error);
+  } else {
+    res.status(200).json(data);
+    return data;
+  }
+});
+// receber todas as reservas (não precisa estar autenticado.)
+app.get("/reservas", async (req, res) => {
+  const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
+
+  const { data, error } = await supabase
+    .from("reservas")
     .select("*")
     .order("created_at", { ascending: false })
     .limit(limit);
